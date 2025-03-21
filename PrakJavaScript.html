@@ -6,96 +6,238 @@
     <title>Form Pilihan</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             text-align: center;
-            margin: 20px;
+            background: linear-gradient(120deg, #f6d365, #fda085);
+            margin: 0;
+            padding: 20px;
         }
+
         .container {
             width: 50%;
             margin: auto;
+            background: white;
             padding: 20px;
-            border: 2px solid #333;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            animation: fadeIn 0.5s ease-in-out;
         }
-        input, button, select {
-            margin: 10px 0;
-            padding: 8px;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .profile {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid #ff9800;
+            object-fit: cover;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #ff9800;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #e68900;
+            transform: scale(1.05);
+        }
+
+        .error-text {
+            color: red;
+            font-size: 14px;
+            margin-top: 3px;
+            display: none;
+        }
+
         .hidden {
             display: none;
         }
-        button:hover {
-            background-color: #4CAF50;
-            color: white;
-            transition: 0.3s;
+
+        .hasil-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #333;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <header>
-        <p><strong>Nama:</strong> Lusia Hingi Bolen</p>
-        <p><strong>NIM:</strong> 12345678</p>
-        <img src="fp.jpg" alt="Foto Profil" width="100">
-        <h2>Form Pilihan</h2>
-    </header>
-    
     <div class="container">
+        <div class="profile">
+            <img src="fp.jpg" alt="Foto Profil">
+            <h3>LUSIA HINGI BOLEN</h3>
+            <p>NIM: 235314005</p>
+        </div>
+
         <label for="nama">Nama:</label>
         <input type="text" id="nama" placeholder="Masukkan nama">
-        <br>
+        <p class="error-text" id="errorNama">* Nama wajib diisi!</p>
+
         <label for="jumlah">Jumlah Pilihan:</label>
-        <input type="number" id="jumlah" min="1" max="10" placeholder="Masukkan angka">
-        <br>
+        <select id="jumlah">
+            <option value="" disabled selected>Pilih jumlah</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <p class="error-text" id="errorJumlah">* Pilih jumlah pilihan!</p>
+
         <button onclick="generateInputs()">OK</button>
+
         <div id="pilihanContainer" class="hidden"></div>
-        <br>
+
         <button id="submitPilihan" class="hidden" onclick="showSelection()">Submit</button>
-        <div id="hasil" class="hidden"></div>
+
+        <div id="hasil" class="hidden">
+            <h3>Pilihan Anda:</h3>
+            <div class="dropdown-container">
+                <label for="dropdown">Silakan pilih:</label>
+                <select id="dropdown"></select>
+            </div>
+            <button onclick="confirmSelection()">OK</button>
+        </div>
+
+        <div id="hasilAkhir" class="hidden hasil-container">
+            <button onclick="resetForm()">Back</button>
+        </div>
     </div>
-    
+
     <script>
         function generateInputs() {
             let nama = document.getElementById("nama").value;
             let jumlah = document.getElementById("jumlah").value;
             let container = document.getElementById("pilihanContainer");
             let submitBtn = document.getElementById("submitPilihan");
-            
-            if (nama === "" || jumlah === "") {
-                alert("Harap isi semua bidang!");
+            let errorNama = document.getElementById("errorNama");
+            let errorJumlah = document.getElementById("errorJumlah");
+
+            errorNama.style.display = "none";
+            errorJumlah.style.display = "none";
+
+            if (nama === "") {
+                errorNama.style.display = "block";
                 return;
             }
-            
+
+            if (jumlah === "") {
+                errorJumlah.style.display = "block";
+                return;
+            }
+
             jumlah = parseInt(jumlah);
             container.innerHTML = ""; 
-            
+
             for (let i = 1; i <= jumlah; i++) {
                 container.innerHTML += `<label for="pilihan${i}">Pilihan ${i}: </label>
-                                       <input type="text" id="pilihan${i}" placeholder="Teks Pilihan ${i}"><br>`;
+                                       <input type="text" id="pilihan${i}" placeholder="Teks Pilihan ${i}" oninput="checkDuplicate()">
+                                       <p class="error-text" id="errorPilihan${i}">* Pilihan ${i} wajib diisi!</p><br>`;
             }
-            
+
             container.classList.remove("hidden");
             submitBtn.classList.remove("hidden");
         }
-        
+
+        function checkDuplicate() {
+            let jumlah = parseInt(document.getElementById("jumlah").value);
+            let pilihanValues = [];
+            let hasDuplicate = false;
+
+            for (let i = 1; i <= jumlah; i++) {
+                let pilihan = document.getElementById(`pilihan${i}`).value.trim();
+                if (pilihan !== "") {
+                    if (pilihanValues.includes(pilihan)) {
+                        hasDuplicate = true;
+                        document.getElementById(`errorPilihan${i}`).innerText = "* Pilihan tidak boleh sama!";
+                        document.getElementById(`errorPilihan${i}`).style.display = "block";
+                    } else {
+                        document.getElementById(`errorPilihan${i}`).style.display = "none";
+                    }
+                    pilihanValues.push(pilihan);
+                }
+            }
+
+            document.getElementById("submitPilihan").disabled = hasDuplicate;
+        }
+
         function showSelection() {
-            let nama = document.getElementById("nama").value;
             let jumlah = parseInt(document.getElementById("jumlah").value);
             let hasil = document.getElementById("hasil");
-            let pilihanText = "";
-            
+            let dropdown = document.getElementById("dropdown");
+            let allFilled = true;
+
+            dropdown.innerHTML = "";
+
             for (let i = 1; i <= jumlah; i++) {
                 let pilihan = document.getElementById(`pilihan${i}`).value;
+                let errorText = document.getElementById(`errorPilihan${i}`);
+
                 if (pilihan === "") {
-                    alert("Harap isi semua pilihan!");
-                    return;
+                    errorText.style.display = "block";
+                    allFilled = false;
                 }
-                pilihanText += `<li>${pilihan}</li>`;
+
+                dropdown.innerHTML += `<option value="${pilihan}">${pilihan}</option>`;
             }
-            
-            hasil.innerHTML = `<p>Halo, nama saya <strong>${nama}</strong>. Saya memiliki ${jumlah} pilihan:</p>
-                               <ul>${pilihanText}</ul>`;
+
+            if (!allFilled) return;
             hasil.classList.remove("hidden");
+        }
+
+        function confirmSelection() {
+    let nama = document.getElementById("nama").value;
+    let jumlah = document.getElementById("jumlah").value;
+    let selectedDropdown = document.getElementById("dropdown").value;
+    let hasilAkhir = document.getElementById("hasilAkhir");
+
+    let pilihanText = [];
+    for (let i = 1; i <= jumlah; i++) {
+        let pilihan = document.getElementById(`pilihan${i}`).value;
+        pilihanText.push(pilihan);
+    }
+
+    let pilihanGabungan = pilihanText.join(", ");
+
+    hasilAkhir.innerHTML = `<p>Hallo, nama saya <strong>${nama}</strong>, saya mempunyai sejumlah <strong>${jumlah}</strong> pilihan yaitu <strong>${pilihanGabungan}</strong>, dan saya memilih <strong>${selectedDropdown}</strong>.</p>
+                            <button onclick="resetForm()">Back</button>`;
+    hasilAkhir.classList.remove("hidden");
+}
+
+
+        function resetForm() {
+            location.reload();
         }
     </script>
 </body>
